@@ -1,6 +1,6 @@
 {
   "name": "macos-traffic-lights-vue",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MacOS traffic lights vue-component",
   "main": "./src/TrafficLights.vue",
   "exports": {
