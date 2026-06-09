@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "MacOS traffic lights vue-component",
   "main": "./src/TrafficLights.vue",
+  "exports": {
+    ".": "./src/TrafficLights.vue"
+  },
   "files": ["./src/TrafficLights.vue"],
   "sideEffects": false,
+  "homepage": "https://github.com/aw3r1se/macOS-traffic-lights-vue#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aw3r1se/macOS-traffic-lights-vue.git"
   },
   "dependencies": {
-    "macos-traffic-lights": "^1.0.1"
+    "macos-traffic-lights": "^1.1.0"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
@@ -21,8 +25,11 @@
     "svg",
     "vue"
   ],
-  "author": "aw3r1se",
-  "license": "GPL-3.0",
+  "author": {
+    "name": "Bogdan Koch",
+    "email": "aw3r1se@gmail.com"
+  },
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/aw3r1se/macOS-traffic-lights-vue/issues"
   }

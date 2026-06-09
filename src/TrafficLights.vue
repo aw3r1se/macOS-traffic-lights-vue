@@ -3,106 +3,119 @@ import { reactive, ref } from 'vue';
 
 import * as icons from 'macos-traffic-lights';
 
-const order = ['close', 'minimize', 'maximize'];
+const BUTTONS = ['close', 'minimize', 'maximize'];
 
-const iconsByState = {
-    close: {
-        default: icons.closeDefault,
-        hover: icons.closeHover,
-        active: icons.closeActive,
-        unfocused: icons.unfocused,
-    },
-    minimize: {
-        default: icons.minimizeDefault,
-        hover: icons.minimizeHover,
-        active: icons.minimizeActive,
-        unfocused: icons.unfocused,
-    },
-    maximize: {
-        default: icons.maximizeDefault,
-        hover: icons.maximizeHover,
-        active: icons.maximizeActive,
-        unfocused: icons.unfocused,
-    },
-};
+// Build the per-button icon set from the upstream exports so the three
+// buttons stay in sync (e.g. icons.closeDefault, icons.closeHover, ...).
+const iconsByButton = Object.fromEntries(
+    BUTTONS.map((name) => [
+        name,
+        {
+            default: icons[`${name}Default`],
+            hover: icons[`${name}Hover`],
+            active: icons[`${name}Active`],
+            unfocused: icons.unfocused,
+        },
+    ]),
+);
 
+defineProps({
+    // Width/height of each button, in pixels.
+    size: {
+        type: [Number, String],
+        default: 12,
+    },
+});
+
+const emit = defineEmits(['close', 'minimize', 'maximize']);
+
+// The state the buttons return to when the pointer leaves the group.
 const baseState = ref('default');
-const iconStates = reactive({
+const buttonStates = reactive({
     close: 'default',
     minimize: 'default',
     maximize: 'default',
 });
 
-const emit = defineEmits([
-    'close',
-    'minimize',
-    'maximize',
-]);
+const iconSrc = (name) => iconsByButton[name][buttonStates[name]];
 
-const getIconSrc = (name) => iconsByState[name][iconStates[name]];
-
-const onGroupMouseEnter = () => {
-    order.forEach((name) => {
-        if (iconStates[name] !== 'active') {
-            iconStates[name] = 'hover';
+const onGroupEnter = () => {
+    BUTTONS.forEach((name) => {
+        if (buttonStates[name] !== 'active') {
+            buttonStates[name] = 'hover';
         }
     });
 };
 
-const onGroupMouseLeave = () => {
-    order.forEach((name) => {
-        iconStates[name] = baseState.value;
+const onGroupLeave = () => {
+    BUTTONS.forEach((name) => {
+        buttonStates[name] = baseState.value;
     });
 };
 
-const onMouseDown = (name) => {
-    onGroupMouseEnter();
-    iconStates[name] = 'active';
+const onPressStart = (name) => {
+    onGroupEnter();
+    buttonStates[name] = 'active';
 };
 
-const onMouseUp = (name) => {
-    iconStates[name] = 'hover';
+const onPressEnd = (name) => {
+    buttonStates[name] = 'hover';
 };
 
-const focus = () => {
-    baseState.value = 'default';
-    order.forEach((name) => (iconStates[name] = 'default'));
-};
-
-const unfocus = () => {
-    baseState.value = 'unfocused';
-    order.forEach((name) => (iconStates[name] = 'unfocused'));
-};
-
-const handleClick = (name) => {
+const onClick = (name) => {
     if (baseState.value === 'unfocused') {
         baseState.value = 'default';
     }
     emit(name);
 };
 
+const setBaseState = (state) => {
+    baseState.value = state;
+    BUTTONS.forEach((name) => {
+        buttonStates[name] = state;
+    });
+};
+
+const focus = () => setBaseState('default');
+const unfocus = () => setBaseState('unfocused');
+
 defineExpose({
     focus,
     unfocus,
 });
-
 </script>
 
 <template>
     <div
-        @mouseenter="onGroupMouseEnter"
-        @mouseleave="onGroupMouseLeave"
+        class="macos-traffic-lights"
+        @mouseenter="onGroupEnter"
+        @mouseleave="onGroupLeave"
     >
         <img
-            v-for="name in order"
+            v-for="name in BUTTONS"
             :key="name"
-            :src="getIconSrc(name)"
-            class="w-3 h-3"
+            :src="iconSrc(name)"
             :alt="name"
+            :width="size"
+            :height="size"
+            class="macos-traffic-lights__button"
             draggable="false"
-            @mousedown="onMouseDown(name)"
-            @mouseup="onMouseUp(name)"
-            @click="handleClick(name)"
+            @mousedown="onPressStart(name)"
+            @mouseup="onPressEnd(name)"
+            @click="onClick(name)"
         />
     </div>
 </template>
+
+<style scoped>
+.macos-traffic-lights {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.macos-traffic-lights__button {
+    cursor: default;
+    user-select: none;
+}
+</style>
